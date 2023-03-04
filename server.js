@@ -20,26 +20,17 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
     const db = client.db('strava-heatmap-project');
     const authCollection = db.collection('auth')
 
-    //app.use(bodyParser.urlencoded({ extended: true })); //needed for forms probably not gonna use 
-    // app.get('/',(req,res)=>{
-    //     //res.sendFile(_currentDir + "/index.html");//sends index.html to browser. REMOVED THIS BECAUSE WE RENDERED html template with ejs engine?
-    //     db.collection('quotes').find().toArray()
-    //     .then(results => {
-    //       console.log(results)
-    //       res.render('index.ejs', {quotes: results})//this is why we don't need the res.sendFile(/index.html) anymore?
-    //     })//gets quotes from database
-    //     .catch(error => console.error(error));
-        
-    // });
     app.get('/',(request,response)=>{
         response.sendFile(__dirname+'/index.html')
     })
 
     // The below configuration is the minimum required. OATH2 Stuff from https://www.npmjs.com/package/strava-oauth2
+    //eventually store this on MONGO as well
     const config = {
         client_id: 101662,
         client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
-        redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback'
+        redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback',
+        scopes: ['read_all']
     };
     var url = require('url');
     const { Client, Token } = require('strava-oauth2');
@@ -64,6 +55,7 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
         // res.redirect('/');
     });
 
+    
     app.get('/',(request,response)=>{
         response.sendFile(__dirname+'/index.html')
     })
