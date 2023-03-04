@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors')
+const myURL = 'https://strava-heatmap-project.hehrokuapp.com';
 app.use(express.static('public'))
 app.use(cors());
 
@@ -9,7 +10,7 @@ app.use(cors());
 const config = {
     client_id: 101662,
     client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
-    redirect_uri: 'localhost:8000/auth/callback'
+    redirect_uri: myURL+'/auth/callback'
 };
 
 var url = require('url');
@@ -33,6 +34,7 @@ app.get('/home', (req, res) => {
     res.send('Welcome!');
 });
 
+
 app.get('/',(request,response)=>{
     response.sendFile(__dirname+'/index.html')
 })
@@ -46,6 +48,6 @@ app.get('/',(request,response)=>{
     
 // })
 const PORT = 8000;
-app.listen(PORT,()=>{
+app.listen(process.env.PORT||PORT,()=>{
     console.log(`Server running on port ${PORT}`)
 })
