@@ -30,7 +30,7 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
         client_id: 101662,
         client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
         redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback',
-        //scopes: ['read_all']
+        scopes: ['read_all'],
     };
     var url = require('url');
     const { Client, Token } = require('strava-oauth2');
