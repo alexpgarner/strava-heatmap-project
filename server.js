@@ -11,8 +11,9 @@ app.use(cors());
 //MONGODB STUFF
 const MongoClient = require('mongodb').MongoClient
 const _connectionString = "mongodb+srv://CallMeAL:eLqSlF9oSLX6ZItb@cluster0.sjhenv3.mongodb.net/?retryWrites=true&w=majority";
+const uri = process.env.MONGODB_URI;
 
-MongoClient.connect(_connectionString, { useUnifiedTopology: true })
+MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
   .then(client => {
     //app.set('view engine', 'ejs')//tells express we are using ejs template engine
     // Middlewares and other routes here...
