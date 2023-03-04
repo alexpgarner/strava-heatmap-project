@@ -6,48 +6,77 @@ app.use(express.static('public'))
 app.use(cors());
 
 
-// The below configuration is the minimum required.
-const config = {
-    client_id: 101662,
-    client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
-    redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback'
-};
-
-var url = require('url');
-const { Client, Token } = require('strava-oauth2');
-const client = new Client(config);
-
-app.get('/auth', (req, res) => {
-    res.redirect(client.getAuthorizationUri());
-});
-
-// Must be the same as the redirect_uri specified in the config
-app.get('/auth/callback', async (req, res) => {
-    console.log('AM I WORKING?')
-    const token = await client.getToken(req.originalUrl);
-    // Process token...
-    console.log(token)
-    res.redirect('/');
-});
-
-app.get('/home', (req, res) => {
-    res.send('Welcome!');
-});
 
 
-app.get('/',(request,response)=>{
-    response.sendFile(__dirname+'/index.html')
-})
+//MONGODB STUFF
+const MongoClient = require('mongodb').MongoClient
+const _connectionString = "mongodb+srv://CallMeAL:eLqSlF9oSLX6ZItb@cluster0.sjhenv3.mongodb.net/?retryWrites=true&w=majority";
 
-// app.get('/stravalogin',(request,response)=>{
-//     // app.get('https://www.strava.com/oauth/authorize',(req,res)=>{
-//     //     console.log(res.json())
-//     // })
-//     response.redirect('https://www.strava.com/oauth/authorize');
-//     console.log("click")
+MongoClient.connect(_connectionString, { useUnifiedTopology: true })
+  .then(client => {
+    //app.set('view engine', 'ejs')//tells express we are using ejs template engine
+    // Middlewares and other routes here...
+    const db = client.db('strava-heatmap-project');
+    const authCollection = db.collection('auth')
+
+    //app.use(bodyParser.urlencoded({ extended: true })); //needed for forms probably not gonna use 
+    // app.get('/',(req,res)=>{
+    //     //res.sendFile(_currentDir + "/index.html");//sends index.html to browser. REMOVED THIS BECAUSE WE RENDERED html template with ejs engine?
+    //     db.collection('quotes').find().toArray()
+    //     .then(results => {
+    //       console.log(results)
+    //       res.render('index.ejs', {quotes: results})//this is why we don't need the res.sendFile(/index.html) anymore?
+    //     })//gets quotes from database
+    //     .catch(error => console.error(error));
+        
+    // });
+    app.get('/',(request,response)=>{
+        response.sendFile(__dirname+'/index.html')
+    })
+
+    // The below configuration is the minimum required.
+    const config = {
+        client_id: 101662,
+        client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
+        redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback'
+    };
+    var url = require('url');
+    const { Client, Token } = require('strava-oauth2');
+    const client = new Client(config);
     
-// })
-const PORT = 8000;
-app.listen(process.env.PORT||PORT,()=>{
-    console.log(`Server running on port ${PORT}`)
-})
+    app.get('/auth', (req, res) => {
+        res.redirect(client.getAuthorizationUri());
+    });
+
+    // Must be the same as the redirect_uri specified in the config
+    app.get('/auth/callback', async (req, res) => {
+        console.log('AM I WORKING?')
+        const token = await client.getToken(req.originalUrl);
+        // Process token...to MONGODB
+        authCollection.insertOne(token)
+        .then(result=>{
+            console.log(result)
+            res.redirect('/');
+        })
+        .catch(error=>console.error(error));
+        // console.log(token)
+        // res.redirect('/');
+    });
+
+    app.get('/',(request,response)=>{
+        response.sendFile(__dirname+'/index.html')
+    })
+
+    // app.get('/stravalogin',(request,response)=>{
+    //     // app.get('https://www.strava.com/oauth/authorize',(req,res)=>{
+    //     //     console.log(res.json())
+    //     // })
+    //     response.redirect('https://www.strava.com/oauth/authorize');
+    //     console.log("click")
+
+    // })
+    const PORT = 8000;
+    app.listen(process.env.PORT||PORT,()=>{
+        console.log(`Server running on port ${PORT}`)
+    })
+  });
