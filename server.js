@@ -34,7 +34,7 @@ MongoClient.connect(_connectionString, { useUnifiedTopology: true })
         response.sendFile(__dirname+'/index.html')
     })
 
-    // The below configuration is the minimum required.
+    // The below configuration is the minimum required. OATH2 Stuff from https://www.npmjs.com/package/strava-oauth2
     const config = {
         client_id: 101662,
         client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
@@ -42,16 +42,16 @@ MongoClient.connect(_connectionString, { useUnifiedTopology: true })
     };
     var url = require('url');
     const { Client, Token } = require('strava-oauth2');
-    const client = new Client(config);
+    const client_OATH = new Client(config);
     
     app.get('/auth', (req, res) => {
-        res.redirect(client.getAuthorizationUri());
+        res.redirect(client_OATH.getAuthorizationUri());
     });
 
     // Must be the same as the redirect_uri specified in the config
     app.get('/auth/callback', async (req, res) => {
         console.log('AM I WORKING?')
-        const token = await client.getToken(req.originalUrl);
+        const token = await client_OATH.getToken(req.originalUrl);
         // Process token...to MONGODB
         authCollection.insertOne(token)
         .then(result=>{
