@@ -10,7 +10,7 @@ app.use(cors());
 const config = {
     client_id: 101662,
     client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
-    redirect_uri: myURL+'/auth/callback'
+    redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback'
 };
 
 var url = require('url');
