@@ -24,22 +24,22 @@ function getActivites(access_token,pageNum='1'){
         .then(data => {
           console.log(data)//should log actives on pageNUM
           //for each activity we grap summary_polyline and covert to latitude longitude coordiates and then add to map.
-          data.forEach(element=>{
-            let polyline = L.Polyline.fromEncoded(element.map.summary_polyline); //from https://github.com/jieter/Leaflet.encoded/blob/master/Polyline.encoded.js
-            // prints an array of 3 LatLng objects.
-            let coordinates = polyline.getLatLngs();//coverts the polyline to latlng coorditnates
-            //console.log(coordinates);
-            //console.log(element.map.summary_polyline)
-            L.polyline(
-              coordinates,
-              {
-                color: 'red',
-                weight: 5,
-                opacity: 7,
-                lineJoin: 'round'
-              }
-            ).addTo(map)//adds activy coordinates to the map
-          })
+        //   data.forEach(element=>{
+        //     let polyline = L.Polyline.fromEncoded(element.map.summary_polyline); //from https://github.com/jieter/Leaflet.encoded/blob/master/Polyline.encoded.js
+        //     // prints an array of 3 LatLng objects.
+        //     let coordinates = polyline.getLatLngs();//coverts the polyline to latlng coorditnates
+        //     //console.log(coordinates);
+        //     //console.log(element.map.summary_polyline)
+        //     L.polyline(
+        //       coordinates,
+        //       {
+        //         color: 'red',
+        //         weight: 5,
+        //         opacity: 7,
+        //         lineJoin: 'round'
+        //       }
+        //     ).addTo(map)//adds activy coordinates to the map
+        //   })
           return data;//for now returns page data to get out of while loop in reAuthorize(). Want to store all user data later so I can keep requests at a minimum.
         })
         .catch(err => {
