@@ -44,11 +44,29 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
     app.get('/auth/callback', async (req, res) => {
         console.log('AM I WORKING?')
         const token = await client_OATH.getToken(req.originalUrl);
+        console.log(token);
         // Process token...to MONGODB
-        authCollection.insertOne(token)
+        const firstName = token.athlete.firstname;
+        const lastName = token.athlete.lastname;
+        authCollection.findOneAndUpdate(
+            {name:`${firstName} ${lastName}`},
+            {
+                $set: {
+                name: `${firstName} ${lastName}`,
+                token: token
+                }
+            },
+            {upsert: true}
+        )
+        .then(result => {
+            console.log(result);
+            res.json('Success')
+        })
         .then(result=>{
             console.log(result)
+            
             res.redirect('/');
+            
         })
         .catch(error=>console.error(error));
         // console.log(token)
@@ -60,6 +78,9 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
         response.sendFile(__dirname+'/index.html')
     })
 
+    // app.get('/activies',(request,response)=>{
+    //     const url = `https://www.strava.com/api/v3/activities?access_token=${access_token}&per_page=200&page=${pageNum}`//URL to get 200 activies per page
+    // }
     // app.get('/stravalogin',(request,response)=>{
     //     // app.get('https://www.strava.com/oauth/authorize',(req,res)=>{
     //     //     console.log(res.json())
