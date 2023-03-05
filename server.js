@@ -60,13 +60,8 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
         )
         .then(result => {
             console.log(result);
-            res.json('Success')
-        })
-        .then(result=>{
-            console.log(result)
-            
             res.redirect('/');
-            
+            //res.json('Success')
         })
         .catch(error=>console.error(error));
         // console.log(token)
