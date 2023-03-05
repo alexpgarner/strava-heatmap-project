@@ -13,6 +13,40 @@ const MongoClient = require('mongodb').MongoClient
 const _connectionString = "mongodb+srv://CallMeAL:eLqSlF9oSLX6ZItb@cluster0.sjhenv3.mongodb.net/?retryWrites=true&w=majority";
 const uri = process.env.MONGODB_URI;
 
+
+function getActivites(access_token,pageNum='1'){
+    //console.log(access_token)
+    const url = `https://www.strava.com/api/v3/activities?access_token=${access_token}&per_page=200&page=${pageNum}`//URL to get 200 activies per page
+    //console.log(url)
+  
+    return fetch(url)
+        .then(res => res.json()) // parse response as JSON
+        .then(data => {
+          console.log(data)//should log actives on pageNUM
+          //for each activity we grap summary_polyline and covert to latitude longitude coordiates and then add to map.
+          data.forEach(element=>{
+            let polyline = L.Polyline.fromEncoded(element.map.summary_polyline); //from https://github.com/jieter/Leaflet.encoded/blob/master/Polyline.encoded.js
+            // prints an array of 3 LatLng objects.
+            let coordinates = polyline.getLatLngs();//coverts the polyline to latlng coorditnates
+            //console.log(coordinates);
+            //console.log(element.map.summary_polyline)
+            L.polyline(
+              coordinates,
+              {
+                color: 'red',
+                weight: 5,
+                opacity: 7,
+                lineJoin: 'round'
+              }
+            ).addTo(map)//adds activy coordinates to the map
+          })
+          return data;//for now returns page data to get out of while loop in reAuthorize(). Want to store all user data later so I can keep requests at a minimum.
+        })
+        .catch(err => {
+            console.log(`error ${err}`)
+        });
+}
+
 MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
   .then(client => {
     //app.set('view engine', 'ejs')//tells express we are using ejs template engine
