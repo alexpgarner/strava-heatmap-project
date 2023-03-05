@@ -19,6 +19,7 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
     // Middlewares and other routes here...
     const db = client.db('strava-heatmap-project');
     const authCollection = db.collection('auth')
+    const activities = db.collection('athlete-activities');
 
     app.get('/',(request,response)=>{
         response.sendFile(__dirname+'/index.html')
@@ -86,17 +87,17 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
            //res.json('Success');
         })
         .then(activities=>{
-            authCollection.findOneAndUpdate(
+            activities.findOneAndUpdate(
                 {name:`${firstName} ${lastName}`},
                 {
                     $set: {
                     name: `${firstName} ${lastName}`,
-                    token: token,
                     activities: activities
                     }
                 },
                 {upsert: true}
             )
+            res.json('Success')
         })
         //.then(res=>)
         .catch(error=>console.error(error));
