@@ -44,7 +44,7 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
     app.get('/auth/callback', async (req, res) => {
         console.log('AM I WORKING?')
         const token = await client_OATH.getToken(req.originalUrl);
-        console.log(token);
+        //console.log(token);
         // Process token...to MONGODB
         const firstName = token.athlete.firstname;
         const lastName = token.athlete.lastname;
@@ -58,15 +58,51 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
             },
             {upsert: true}
         )
-        .then(result => {
-            console.log(result);
-            res.redirect('/');
-            //res.json('Success')
+        .then(async (result) => {
+            console.log(token);
+            //the max number of activies per page that can be requested is 200. So have to run mutiple requests to get all data if user has more than 200 activies.
+            //had to use async because we have to wait for fetch() in getActivies to resolve in order to not have a undefined error with data.
+            //console.log(json.access_token);
+            let pageNum=1;
+            let pageEmpty = false;
+            let data;
+            let allData;
+            while(!pageEmpty){
+              data =await getActivites(token.access_token,pageNum);
+              allData = allData.concat(data);
+              //console.log(data)
+              //console.log(pageNum)
+              //console.log(data.length)
+              //console.log(pageEmpty)
+              if(data.length<200){//last page will have less than 200 activities
+                pageEmpty = true;
+              }else{
+                pageNum++;
+              }
+            }
+            //res.redirect('/');
+            console.table(allData);//table of all activies
+            resolve(allData)
+           //res.json('Success');
         })
+        .then(activities=>{
+            authCollection.findOneAndUpdate(
+                {name:`${firstName} ${lastName}`},
+                {
+                    $set: {
+                    name: `${firstName} ${lastName}`,
+                    token: token,
+                    activities: activities
+                    }
+                },
+                {upsert: true}
+            )
+        })
+        //.then(res=>)
         .catch(error=>console.error(error));
-        // console.log(token)
-        // res.redirect('/');
-    });
+              // console.log(token)
+              // res.redirect('/');
+     });
 
 
     app.get('/',(request,response)=>{
