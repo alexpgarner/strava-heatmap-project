@@ -8,10 +8,6 @@ app.use(cors());
 
 
 
-//MONGODB STUFF
-const MongoClient = require('mongodb').MongoClient
-const _connectionString = "mongodb+srv://CallMeAL:eLqSlF9oSLX6ZItb@cluster0.sjhenv3.mongodb.net/?retryWrites=true&w=majority";
-const uri = process.env.MONGODB_URI;
 
 
 function getActivites(access_token,pageNum='1'){
@@ -22,7 +18,7 @@ function getActivites(access_token,pageNum='1'){
     return fetch(url)
         .then(res => res.json()) // parse response as JSON
         .then(data => {
-          console.log(data)//should log actives on pageNUM
+          //console.log(data)//should log actives on pageNUM
           //for each activity we grap summary_polyline and covert to latitude longitude coordiates and then add to map.
         //   data.forEach(element=>{
         //     let polyline = L.Polyline.fromEncoded(element.map.summary_polyline); //from https://github.com/jieter/Leaflet.encoded/blob/master/Polyline.encoded.js
@@ -47,7 +43,12 @@ function getActivites(access_token,pageNum='1'){
         });
 }
 
-MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
+//MONGODB STUFF
+const MongoClient = require('mongodb').MongoClient
+const _connectionString = "mongodb+srv://CallMeAL:eLqSlF9oSLX6ZItb@cluster0.sjhenv3.mongodb.net/?retryWrites=true&w=majority";
+const uri = process.env.MONGODB_URI;//don't remember what this was for and not using now?
+
+MongoClient.connect(_connectionString, { useUnifiedTopology: true })
   .then(client => {
     //app.set('view engine', 'ejs')//tells express we are using ejs template engine
     // Middlewares and other routes here...
@@ -64,8 +65,9 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
     const config = {
         client_id: 101662,
         client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
-        redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback',
-        scopes: ['read','read_all','activity:read_all'],
+        //redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback',
+        redirect_uri: `http://localhost:8000/auth/callback`,
+        scopes: ['read','read_all','activity:read_all'],//not sure why but scopes needed comma here to be read properly
     };
     var url = require('url');
     const { Client, Token } = require('strava-oauth2');
@@ -101,7 +103,7 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
             let pageNum=1;
             let pageEmpty = false;
             let data;
-            let allData;
+            let allData =[];
             while(!pageEmpty){
               data =await getActivites(token.access_token,pageNum);
               allData = allData.concat(data);
@@ -115,25 +117,35 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
                 pageNum++;
               }
             }
-            //res.redirect('/');
-            console.table(allData);//table of all activies
-            resolve(allData)
+           // res.redirect('/');
+           // console.table(allData);//table of all activies
+           activities.findOneAndUpdate(
+            {name:`${firstName} ${lastName}`},
+            {
+                $set: {
+                name: `${firstName} ${lastName}`,
+                activities: allData
+                }
+            },
+            {upsert: true}
+        )
+        res.json('Success')
            //res.json('Success');
         })
-        .then(activities=>{
-            activities.findOneAndUpdate(
-                {name:`${firstName} ${lastName}`},
-                {
-                    $set: {
-                    name: `${firstName} ${lastName}`,
-                    activities: activities
-                    }
-                },
-                {upsert: true}
-            )
-            res.json('Success')
-        })
-        //.then(res=>)
+        // .then(activities=>{
+        //     activities.findOneAndUpdate(
+        //         {name:`${firstName} ${lastName}`},
+        //         {
+        //             $set: {
+        //             name: `${firstName} ${lastName}`,
+        //             activities: activities
+        //             }
+        //         },
+        //         {upsert: true}
+        //     )
+        //     res.json('Success')
+        // })
+
         .catch(error=>console.error(error));
               // console.log(token)
               // res.redirect('/');
@@ -156,7 +168,10 @@ MongoClient.connect(process.env.MONGODB_URI, { useUnifiedTopology: true })
 
     // })
     const PORT = 8000;
-    app.listen(process.env.PORT||PORT,()=>{
-        console.log(`Server running on port ${PORT}`)
-    })
+    app.listen(PORT,()=>{
+      console.log(`Server running on port ${PORT}`)
+  })
+    // app.listen(process.env.PORT||PORT,()=>{
+    //     console.log(`Server running on port ${PORT}`)
+    // })
   });
