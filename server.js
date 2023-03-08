@@ -4,7 +4,8 @@ const cors = require('cors')
 const myURL = 'https://strava-heatmap-project.hehrokuapp.com';
 app.use(express.static('public'))
 app.use(cors());
-
+const dotenv = require('dotenv');
+dotenv.config();
 
 
 
@@ -44,11 +45,10 @@ function getActivites(access_token,pageNum='1'){
 }
 
 //MONGODB STUFF
-const MongoClient = require('mongodb').MongoClient
-const _connectionString = "mongodb+srv://CallMeAL:eLqSlF9oSLX6ZItb@cluster0.sjhenv3.mongodb.net/?retryWrites=true&w=majority";
-const uri = process.env.MONGODB_URI;//don't remember what this was for and not using now?
 
-MongoClient.connect(_connectionString, { useUnifiedTopology: true })
+const MongoClient = require('mongodb').MongoClient
+let uri = process.env.connectionString;//hiding connectionString from github
+MongoClient.connect(uri, { useUnifiedTopology: true })
   .then(client => {
     //app.set('view engine', 'ejs')//tells express we are using ejs template engine
     // Middlewares and other routes here...
@@ -63,8 +63,8 @@ MongoClient.connect(_connectionString, { useUnifiedTopology: true })
     // The below configuration is the minimum required. OATH2 Stuff from https://www.npmjs.com/package/strava-oauth2
     //eventually store this on MONGO as well
     const config = {
-        client_id: 101662,
-        client_secret: '209a2403d1d6334bfaa4cb0c259bf96503a65735',
+        client_id: process.env.client_id,
+        client_secret: process.env.client_secret,
         //redirect_uri: 'https://strava-heatmap-project.herokuapp.com/auth/callback',
         redirect_uri: `http://localhost:8000/auth/callback`,
         scopes: ['read','read_all','activity:read_all'],//not sure why but scopes needed comma here to be read properly
@@ -119,7 +119,7 @@ MongoClient.connect(_connectionString, { useUnifiedTopology: true })
             }
            // res.redirect('/');
            // console.table(allData);//table of all activies
-           activities.findOneAndUpdate(
+          activities.findOneAndUpdate(
             {name:`${firstName} ${lastName}`},
             {
                 $set: {
@@ -129,7 +129,8 @@ MongoClient.connect(_connectionString, { useUnifiedTopology: true })
             },
             {upsert: true}
         )
-        res.json('Success')
+        .then(result=>res.json('Success'))
+        .catch(error=>console.error(error));
            //res.json('Success');
         })
         // .then(activities=>{
