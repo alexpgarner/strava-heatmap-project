@@ -1,9 +1,4 @@
-document.querySelector('#login').addEventListener('click',oathRedirect);
+document.querySelector('#login').addEventListener('click',()=>{
+  window.location.href = 'http://localhost:8000/auth/'
+});
 console.log("HELLO")
-async function oathRedirect(){
-    //console.log('click')
-    const res = await fetch(`/auth`)
-    const data = await res.json()
-   
-    console.log(data);
-  }
